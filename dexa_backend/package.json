@@ -33,9 +33,9 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "mysql2": "^3.14.4",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "mysql2": "^3.14.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.27"
@@ -45,8 +45,9 @@
     "@nestjs/mau": "^0.2.6",
     "@nestjs/schematics": "^12.0.0",
     "@nestjs/testing": "^12.0.1",
-    "@types/express": "^5.0.0",
     "@types/bcrypt": "^5.0.2",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^2.3.0",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.0.0",
@@ -56,8 +57,8 @@
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
-    "typescript": "^6.0.2",
     "tsx": "^4.19.4",
+    "typescript": "^6.0.2",
     "vite": "^8.0.0",
     "vitest": "^4.1.2"
   }

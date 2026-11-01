@@ -19,7 +19,7 @@ export class AuthService {
       throw new UnauthorizedException('Email atau password salah.')
     }
 
-    const token = await this.jwt.signAsync({ sub: employee.id, role: employee.role })
+    const token = await this.jwt.signAsync({ sub: employee.id, role: employee.role, name: employee.name })
     return { token, user: this.toPublicUser(employee), expiresIn: this.config.get<string>('JWT_EXPIRES_IN', '1d') }
   }
 

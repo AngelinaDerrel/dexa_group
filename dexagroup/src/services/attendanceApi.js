@@ -1,5 +1,5 @@
 import api from './api'
-import { mockAttendance, mockDelay, mockHistory } from './mockData'
+import { mockAttendance, mockAttendanceRecords, mockDelay, mockHistory } from './mockData'
 const useMock = import.meta.env.VITE_USE_MOCK !== 'false'
 export const attendanceApi = {
   async today() {
@@ -24,6 +24,18 @@ export const attendanceApi = {
     if (useMock) return mockDelay(mockHistory)
     // Service mengambil seluruh riwayat presensi pengguna aktif.
     const response = await api.get('/attendances/me')
+    return response.data
+  },
+  async all({ employeeId, from, to } = {}) {
+    if (useMock) {
+      const data = mockAttendanceRecords.filter((record) =>
+        (!employeeId || String(record.employeeId) === String(employeeId))
+        && (!from || record.attendanceDate >= from)
+        && (!to || record.attendanceDate <= to),
+      )
+      return mockDelay({ data, total: data.length, page: 1, limit: 20 })
+    }
+    const response = await api.get('/attendances', { params: { employeeId, from, to, page: 1, limit: 100 } })
     return response.data
   },
 }

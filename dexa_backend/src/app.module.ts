@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './auth/auth.module.js'
 import { Employee } from './employees/employee.entity.js'
 import { EmployeesModule } from './employees/employees.module.js'
+import { Attendance } from './attendances/attendance.entity.js'
+import { AttendancesModule } from './attendances/attendances.module.js'
 
 @Module({
   imports: [
@@ -13,16 +15,17 @@ import { EmployeesModule } from './employees/employees.module.js'
       useFactory: (config: ConfigService) => ({
         type: 'mysql',
         host: config.getOrThrow<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT', 3306),
+        port: Number(config.get('DB_PORT', 3306)),
         username: config.getOrThrow<string>('DB_USERNAME'),
         password: config.getOrThrow<string>('DB_PASSWORD'),
         database: config.getOrThrow<string>('DB_NAME'),
-        entities: [Employee],
-        synchronize: config.get<boolean>('DB_SYNCHRONIZE', false),
+        entities: [Employee, Attendance],
+        synchronize: config.get<boolean>('DB_SYNCHRONIZE', true),
       }),
     }),
     AuthModule,
     EmployeesModule,
+    AttendancesModule,
   ],
 })
 export class AppModule {}

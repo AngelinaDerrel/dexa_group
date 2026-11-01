@@ -127,6 +127,19 @@ a {
   background: white;
   outline: none;
 }
+.field select {
+  width: 100%;
+  border: 1px solid #d6dbe2;
+  border-radius: 8px;
+  padding: 11px 13px;
+  color: var(--ink);
+  background: white;
+  outline: none;
+}
+.field select:focus {
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 0 3px rgba(22,127,134,.12);
+}
 .field textarea {
   resize: vertical;
   min-height: 105px;
@@ -464,6 +477,54 @@ a {
 .table-card {
   padding: 7px 0;
 }
+.filter-card {
+  padding: 18px 20px 2px;
+  margin-bottom: 18px;
+}
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 0 16px;
+}
+.filter-grid .field select {
+  min-height: 43px;
+}
+.attendance-detail img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  margin-top: 22px;
+  border-radius: 8px;
+  background: #f7f8f9;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 16px;
+}
+.form-grid .field {
+  min-width: 0;
+}
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.table-subtext {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.table-actions {
+  display: flex;
+  gap: 12px;
+}
+.danger-link {
+  color: #b42335;
+}
 .link-button {
   border: 0;
   background: none;
@@ -482,7 +543,7 @@ a {
   z-index: 4;
 }
 .modal {
-  width: min(100%, 560px);
+  width: min(100%, 760px);
   background: white;
   border-radius: 14px;
   padding: 22px;
@@ -544,5 +605,17 @@ a {
   }
   .attendance-card, .profile-details, .profile-summary {
     padding: 20px;
+  }
+  .page-header {
+    display: block;
+  }
+  .page-header .button {
+    margin-top: 16px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .filter-grid {
+    grid-template-columns: 1fr;
   }
 }
