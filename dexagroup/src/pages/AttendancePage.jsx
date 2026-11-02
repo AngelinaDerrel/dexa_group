@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, LoadingSpinner } from '../components/UI'
 import LiveClock from '../components/LiveClock'
-import PhotoUploader from '../components/PhotoUploader'
+import PhotoInput from '../components/PhotoInput'
 import { attendanceApi } from '../services/attendanceApi'
 import { getErrorMessage } from '../lib/api'
 
@@ -78,52 +78,26 @@ export default function AttendancePage() {
               </div>
             </Card>
           ) : (
-            <form
-              onSubmit={submit}
-              className="attendance-grid"
-            >
+            <form onSubmit={submit} className="attendance-grid">
               <Card className="attendance-card">
                 <LiveClock />
-
-                <label
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    display: 'block',
-                    marginBottom: 8,
-                  }}
-                >
+                <label style={{fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 8, }}>
                   Foto presensi
                 </label>
-
-                <PhotoUploader onChange={setPhoto} />
+                <div className="alert" style={{ background: '#f5f8fa', color: '#667085' }}>
+                  Pastikan foto menunjukkan wajah Anda dengan jelas untuk validasi presensi.
+                </div>
+                <PhotoInput onChange={setPhoto} />
               </Card>
 
               <Card className="attendance-card">
                 <div className="field">
                   <label htmlFor="notes">Catatan (opsional)</label>
-                  <textarea
-                    id="notes"
-                    placeholder="Tambahkan catatan aktivitas hari ini..."
-                    value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
-                  />
-                </div>
-
-                <div
-                  className="alert"
-                  style={{ background: '#f5f8fa', color: '#667085' }}
-                >
-                  Pastikan foto menunjukkan wajah Anda dengan jelas untuk
-                  validasi presensi.
+                  <textarea id="notes" placeholder="Tambahkan catatan aktivitas hari ini..." value={notes} onChange={(event) => setNotes(event.target.value)} />
                 </div>
 
                 <div className="form-actions">
-                  <Button
-                    type="submit"
-                    loading={submitting}
-                    disabled={!photo}
-                  >
+                  <Button type="submit" loading={submitting} disabled={!photo} >
                     Absen Sekarang
                   </Button>
                 </div>

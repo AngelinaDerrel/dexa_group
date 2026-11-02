@@ -2,7 +2,16 @@ import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-route
 import { useAuth } from '../context/useAuth'
 import logo from '../assets/dexa.png'
 
-function Logo() { return <div className="logo"><div className="logo"><img src={logo} alt="Dexa Group" className="logo-img" /></div></div> }
+function Logo() {
+  return (
+    <div className="logo">
+      <div className="logo">
+        <img src={logo} alt="Dexa Group" className="logo-img" />
+      </div>
+    </div>
+  )
+}
+
 export function Sidebar() {
   const { logout, user } = useAuth()
   const navigate = useNavigate()
@@ -16,7 +25,37 @@ export function Sidebar() {
     ['/attendance-monitoring', '◉', 'Monitoring Presensi'],
   ]
   const links = user?.role === 'HRD' ? [...personalLinks, ...hrdLinks] : personalLinks
-  return <aside className="sidebar"><Logo /><div className="nav-label">Menu utama</div><nav className="nav-list">{links.map(([to, icon, label]) => <NavLink key={to} to={to} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}><span className="nav-icon">{icon}</span>{label}</NavLink>)}</nav><div className="sidebar-bottom"><div className="sidebar-user">{user?.name}</div><button className="nav-item logout" onClick={() => { logout(); navigate('/') }}><span className="nav-icon">↪</span>Keluar</button></div></aside>
+  return (
+    <aside className="sidebar">
+      <Logo />
+      <div className="nav-label">Menu utama</div>
+      <nav className="nav-list">
+        {links.map(([to, icon, label]) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <span className="nav-icon">{icon}</span>
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+      <div className="sidebar-bottom">
+        <div className="sidebar-user">{user?.name}</div>
+        <button
+          className="nav-item logout"
+          onClick={() => {
+            logout()
+            navigate('/')
+          }}
+        >
+          <span className="nav-icon">↪</span>
+          Keluar
+        </button>
+      </div>
+    </aside>
+  )
 }
 
 export function Layout() {
@@ -31,7 +70,29 @@ export function Layout() {
     '/attendance-monitoring': 'Monitoring Presensi',
   }
   const pageName = pageNames[location.pathname] || 'Profil'
-  return <div className="app-shell"><Sidebar /><div className="mobile-topbar"><Logo /><span style={{ color: 'var(--muted)', fontSize: 12 }}>{user?.name} · {pageName}</span><button className="mobile-logout" onClick={() => { logout(); navigate('/') }}>Keluar</button></div><main className="main-content"><Outlet /></main></div>
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <div className="mobile-topbar">
+        <Logo />
+        <span style={{ color: 'var(--muted)', fontSize: 12 }}>
+          {user?.name} · {pageName}
+        </span>
+        <button
+          className="mobile-logout"
+          onClick={() => {
+            logout()
+            navigate('/')
+          }}
+        >
+          Keluar
+        </button>
+      </div>
+      <main className="main-content">
+        <Outlet />
+      </main>
+    </div>
+  )
 }
 export function ProtectedRoute() {
   const { user } = useAuth()

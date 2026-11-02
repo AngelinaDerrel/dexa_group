@@ -14,8 +14,8 @@ export class Employee {
   name!: string
 
   @Index({ unique: true })
-  @Column({ length: 30 })
-  nik!: string
+  @Column({ name: 'employee_code', length: 30 })
+  employeeCode!: string
 
   @Index({ unique: true })
   @Column({ length: 255 })

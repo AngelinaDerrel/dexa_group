@@ -62,10 +62,7 @@ export default function HistoryPage() {
       key: 'action',
       label: 'Foto',
       render: (row) => (
-        <button
-          className="link-button"
-          onClick={() => setSelected(row)}
-        >
+        <button className="link-button" onClick={() => setSelected(row)} >
           Lihat
         </button>
       ),

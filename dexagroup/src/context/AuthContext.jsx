@@ -6,7 +6,7 @@ function getStoredUser() {
   try {
     return JSON.parse(localStorage.getItem('dexagroup_user') || 'null')
   } catch {
-    try { localStorage.removeItem('dexagroup_user') } catch { /* Storage is unavailable. */ }
+    try { localStorage.removeItem('dexagroup_user') } catch {}
     return null
   }
 }
@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
     try {
       localStorage.removeItem('dexagroup_user')
       localStorage.removeItem('dexagroup_token')
-    } catch { /* Storage is unavailable. */ }
+    } catch { }
   }
   const value = useMemo(() => ({ isAuthenticated: Boolean(user), user, loading, login, logout }), [user, loading])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -12,9 +12,7 @@ function clearAuth() {
   try {
     localStorage.removeItem('dexagroup_token')
     localStorage.removeItem('dexagroup_user')
-  } catch {
-    // Redirect prevents continued access when storage is unavailable.
-  }
+  } catch {}
   if (window.location.pathname !== '/') window.location.assign('/')
 }
 

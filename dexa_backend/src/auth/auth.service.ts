@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
 import { Employee } from '../employees/employee.entity.js'
 import { EmployeesService } from '../employees/employees.service.js'
+import { ChangePasswordDto } from './dto/change-password.dto.js'
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,18 @@ export class AuthService {
 
   getProfile(employee: Employee) {
     return this.toPublicUser(employee)
+  }
+
+  async changePassword(employee: Employee, dto: ChangePasswordDto) {
+    if (dto.newPassword !== dto.passwordConfirmation) {
+      throw new BadRequestException('Konfirmasi password gagal.')
+    }
+    const employeeWithPassword = await this.employees.findOneWithPassword(employee.id)
+    if (!(await bcrypt.compare(dto.currentPassword, employeeWithPassword.passwordHash))) {
+      throw new UnauthorizedException('Password saat ini salah.')
+    }
+    await this.employees.updatePassword(employee.id, dto.newPassword)
+    return { message: 'Password berhasil diubah.' }
   }
 
   private toPublicUser(employee: Employee) {

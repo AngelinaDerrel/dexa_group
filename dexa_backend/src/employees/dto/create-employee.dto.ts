@@ -1,14 +1,10 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator'
+import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator'
 import { EmployeeRole } from '../employee.entity.js'
 
 export class CreateEmployeeDto {
   @IsString()
   @IsNotEmpty()
   name!: string
-
-  @IsString()
-  @IsNotEmpty()
-  nik!: string
 
   @IsEmail()
   email!: string
@@ -18,6 +14,10 @@ export class CreateEmployeeDto {
   password!: string
 
   @IsString()
+  @MinLength(8)
+  passwordConfirmation!: string
+
+  @IsString()
   @IsNotEmpty()
   position!: string
 
@@ -25,11 +25,10 @@ export class CreateEmployeeDto {
   @IsNotEmpty()
   department!: string
 
-  @IsOptional()
   @IsString()
-  phone?: string
+  @IsNotEmpty()
+  phone!: string
 
-  @IsOptional()
   @IsEnum(EmployeeRole)
-  role?: EmployeeRole
+  role!: EmployeeRole
 }

@@ -34,7 +34,6 @@ export class AttendancesController {
     private readonly cloudinary: CloudinaryService,
   ) {}
 
-  // Karyawan dan HRD: absen + upload foto bukti WFH
   @Post('check-in')
   @Roles(EmployeeRole.EMPLOYEE, EmployeeRole.HRD)
   @UseInterceptors(FileInterceptor('photo', { limits: { fileSize: 5 * 1024 * 1024 } }))
@@ -49,7 +48,6 @@ export class AttendancesController {
       throw new BadRequestException('Foto harus berformat JPG, PNG, atau WEBP.')
     }
 
-    // Cek dulu sebelum menyimpan file, supaya tidak ada foto yatim
     if (await this.attendancesService.findToday(req.user.id)) {
       throw new ConflictException('Kamu sudah absen hari ini.')
     }
@@ -64,21 +62,18 @@ export class AttendancesController {
     )
   }
 
-  // Karyawan dan HRD: riwayat absen saya
   @Get('me')
   @Roles(EmployeeRole.EMPLOYEE, EmployeeRole.HRD)
   findMine(@Req() req: { user: { id: string } }) {
     return this.attendancesService.findMine(req.user.id)
   }
 
-  // Karyawan dan HRD: sudah absen hari ini atau belum
   @Get('me/today')
   @Roles(EmployeeRole.EMPLOYEE, EmployeeRole.HRD)
   findToday(@Req() req: { user: { id: string } }) {
     return this.attendancesService.findToday(req.user.id)
   }
 
-  // HRD: lihat semua absen (view only)
   @Get()
   @Roles(EmployeeRole.HRD)
   findAll(

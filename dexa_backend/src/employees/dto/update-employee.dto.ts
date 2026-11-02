@@ -8,11 +8,6 @@ export class UpdateEmployeeDto {
   name?: string
 
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  nik?: string
-
-  @IsOptional()
   @IsEmail()
   email?: string
 
@@ -20,6 +15,11 @@ export class UpdateEmployeeDto {
   @IsString()
   @MinLength(8)
   password?: string
+
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  passwordConfirmation?: string
 
   @IsOptional()
   @IsString()
