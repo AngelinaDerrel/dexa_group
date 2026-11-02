@@ -18,7 +18,7 @@ export class Attendance {
   @CreateDateColumn({ name: 'check_in' })
   checkIn!: Date
 
-  @Column({ length: 255 })
+  @Column({ length: 1000 })
   photo!: string
 
   @Column({ length: 255, default: '' })

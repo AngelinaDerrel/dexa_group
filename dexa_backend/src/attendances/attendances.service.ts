@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Between, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { Attendance } from './attendance.entity.js'
 
 export function todayWIB(): string {
@@ -27,20 +27,29 @@ export class AttendancesService {
         return this.attendances.findOne({ where: { employeeId, attendanceDate: todayWIB() } })
     }
 
-    async findAll(query: { employeeId?: string; from?: string; to?: string; page?: number; limit?: number } ) {
-        const page = Math.max(1, Number(query.page) || 1)
-        const limit = Math.min(100, Math.max(1, Number(query.limit) || 20))
+    async findAll(query: { employeeId?: string; search?: string; from?: string; to?: string; page?: number; limit?: number }) {
+            const page = Math.max(1, Number(query.page) || 1)
+            const limit = Math.min(100, Math.max(1, Number(query.limit) || 20))
+            const qb = this.attendances.createQueryBuilder('a')
 
-        const [data, total] = await this.attendances.findAndCount({
-            where: {
-                ...(query.employeeId ? { employeeId: query.employeeId } : {}),
-                ...(query.from && query.to ? { attendanceDate: Between(query.from, query.to) } : {}),
-            },
-            order: { attendanceDate: 'DESC', checkIn: 'DESC' },
-            skip: (page - 1) * limit,
-            take: limit
-        })
+            if (query.employeeId) qb.andWhere('a.employeeId = :employeeId', { employeeId: query.employeeId })
+            if (query.from && query.to) qb.andWhere('a.attendanceDate BETWEEN :from AND :to', { from: query.from, to: query.to })
 
-        return { data, total, page, limit: limit }
-    }
+            const search = query.search?.trim()
+            if (search) {
+                qb.andWhere(
+                    'a.employeeName LIKE :search',
+                    { search: `%${search}%` },
+                )
+            }
+
+            const [data, total] = await qb
+                .orderBy('a.attendanceDate', 'DESC')
+                .addOrderBy('a.checkIn', 'DESC')
+                .skip((page - 1) * limit)
+                .take(limit)
+                .getManyAndCount()
+
+            return { data, total, page, limit }
+        }
     }

@@ -6,7 +6,7 @@ function getStoredUser() {
   try {
     return JSON.parse(localStorage.getItem('dexagroup_user') || 'null')
   } catch {
-    localStorage.removeItem('dexagroup_user')
+    try { localStorage.removeItem('dexagroup_user') } catch { /* Storage is unavailable. */ }
     return null
   }
 }
@@ -19,14 +19,22 @@ export function AuthProvider({ children }) {
     try {
       const result = await authApi.login(credentials)
       setUser(result.user)
-      localStorage.setItem('dexagroup_user', JSON.stringify(result.user))
-      localStorage.setItem('dexagroup_token', result.token)
+      try {
+        localStorage.setItem('dexagroup_user', JSON.stringify(result.user))
+        localStorage.setItem('dexagroup_token', result.token)
+      } catch {
+        throw new Error('Sesi tidak dapat disimpan di browser.')
+      }
       return result
     } finally { setLoading(false) }
   }
   function logout() {
-    setUser(null); localStorage.removeItem('dexagroup_user'); localStorage.removeItem('dexagroup_token')
+    setUser(null)
+    try {
+      localStorage.removeItem('dexagroup_user')
+      localStorage.removeItem('dexagroup_token')
+    } catch { /* Storage is unavailable. */ }
   }
-  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading])
+  const value = useMemo(() => ({ isAuthenticated: Boolean(user), user, loading, login, logout }), [user, loading])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

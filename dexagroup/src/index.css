@@ -152,6 +152,23 @@ a {
   color: #c6283d;
   font-size: 12px;
 }
+.password-field {
+  position: relative;
+}
+.password-field .field {
+  margin-bottom: 17px;
+}
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  bottom: 11px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 2px 4px;
+  line-height: 1;
+  font-size: 18px;
+}
 .alert {
   padding: 11px 13px;
   border-radius: 8px;
@@ -286,6 +303,15 @@ a {
   border-top: 1px solid var(--line);
   padding-top: 18px;
 }
+.sidebar-user {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 12px 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .logout {
   width: 100%;
   border: 0;
@@ -295,6 +321,13 @@ a {
 }
 .mobile-topbar {
   display: none;
+}
+.mobile-logout {
+  border: 0;
+  background: none;
+  color: var(--brand-red);
+  font-size: 12px;
+  font-weight: 700;
 }
 .profile-grid {
   display: grid;
@@ -489,6 +522,54 @@ a {
 .filter-grid .field select {
   min-height: 43px;
 }
+.employee-filters {
+  grid-template-columns: 2fr 1fr;
+}
+.photo-button {
+  border: 0;
+  background: none;
+  padding: 0;
+}
+.attendance-thumbnail {
+  width: 52px;
+  height: 40px;
+  display: block;
+  object-fit: cover;
+  border-radius: 5px;
+}
+.photo-placeholder {
+  width: 52px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: #eef1f4;
+  border-radius: 5px;
+  font-size: 9px;
+  text-align: center;
+}
+.attendance-photo-large {
+  width: 100%;
+  max-height: 65vh;
+  object-fit: contain;
+  margin-top: 22px;
+  border-radius: 8px;
+  background: #f7f8f9;
+}
+.photo-placeholder-large {
+  width: 100%;
+  min-height: 180px;
+  margin-top: 22px;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
 .attendance-detail img {
   width: 100%;
   max-height: 420px;
@@ -617,5 +698,11 @@ a {
   }
   .filter-grid {
     grid-template-columns: 1fr;
+  }
+  .employee-filters {
+    grid-template-columns: 1fr;
+  }
+  .pagination {
+    gap: 8px;
   }
 }

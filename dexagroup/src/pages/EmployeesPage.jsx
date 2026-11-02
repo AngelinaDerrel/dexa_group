@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Button, Card, DataTable, InputField, LoadingSpinner, Modal, StatusBadge } from '../components/UI'
+import { useEffect, useMemo, useState } from 'react'
+import { Button, Card, DataTable, EmptyState, InputField, LoadingSpinner, Modal, StatusBadge } from '../components/UI'
+import { getErrorMessage } from '../lib/api'
 import { employeeApi } from '../services/employeeApi'
 
 const emptyForm = { name: '', nik: '', email: '', password: '', position: '', department: '', phone: '', role: 'EMPLOYEE', isActive: true }
@@ -22,14 +23,12 @@ function EmployeeForm({ employee, onClose, onSaved }) {
     try {
       const payload = { ...form }
       if (isEditing && !payload.password) delete payload.password
-      if (!isEditing && payload.password.length < 8) {
-        setError('Password minimal 8 karakter.')
-        return
-      }
+      if (isEditing) delete payload.id
+      if (!isEditing) delete payload.isActive
       const saved = isEditing ? await employeeApi.update(employee.id, payload) : await employeeApi.create(payload)
       onSaved(saved)
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Data karyawan tidak dapat disimpan.')
+      setError(getErrorMessage(requestError, 'Data karyawan tidak dapat disimpan.'))
     } finally {
       setSaving(false)
     }
@@ -42,10 +41,10 @@ function EmployeeForm({ employee, onClose, onSaved }) {
         <InputField id="employee-name" name="name" label="Nama lengkap" value={form.name} onChange={updateField} required />
         <InputField id="employee-nik" name="nik" label="NIK" value={form.nik} onChange={updateField} required />
         <InputField id="employee-email" name="email" type="email" label="Email" value={form.email} onChange={updateField} required />
-        <InputField id="employee-phone" name="phone" label="No. HP" value={form.phone} onChange={updateField} />
+        <InputField id="employee-phone" name="phone" label="No. HP" value={form.phone || ''} onChange={updateField} />
         <InputField id="employee-position" name="position" label="Jabatan" value={form.position} onChange={updateField} required />
         <InputField id="employee-department" name="department" label="Departemen" value={form.department} onChange={updateField} required />
-        <InputField id="employee-password" name="password" type="password" label={isEditing ? 'Password baru (opsional)' : 'Password'} value={form.password} onChange={updateField} required={!isEditing} minLength={8} />
+        <InputField id="employee-password" name="password" type="password" label={isEditing ? 'Password baru (opsional)' : 'Password (minimal 8 karakter)'} value={form.password} onChange={updateField} required={!isEditing} minLength={8} />
         <div className="field">
           <label htmlFor="employee-role">Role</label>
           <select id="employee-role" name="role" value={form.role} onChange={updateField}>
@@ -67,49 +66,90 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [query, setQuery] = useState('')
+  const [department, setDepartment] = useState('')
   const [selected, setSelected] = useState(null)
   const [showForm, setShowForm] = useState(false)
+
+  function loadEmployees() {
+    setLoading(true)
+    setError('')
+    employeeApi.list()
+      .then(setEmployees)
+      .catch((requestError) => setError(getErrorMessage(requestError, 'Data karyawan tidak dapat dimuat.')))
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
     let active = true
     employeeApi.list()
       .then((data) => { if (active) setEmployees(data) })
-      .catch(() => { if (active) setError('Data karyawan tidak dapat dimuat.') })
+      .catch((requestError) => { if (active) setError(getErrorMessage(requestError, 'Data karyawan tidak dapat dimuat.')) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [])
 
-  async function removeEmployee(employee) {
-    if (!window.confirm(`Hapus data ${employee.name}?`)) return
+  const departments = useMemo(() => [...new Set(employees.map((employee) => employee.department).filter(Boolean))].sort(), [employees])
+  const filteredEmployees = useMemo(() => employees.filter((employee) => {
+    const search = query.toLowerCase()
+    return (!search || [employee.name, employee.nik, employee.email].some((value) => value?.toLowerCase().includes(search)))
+      && (!department || employee.department === department)
+  }), [employees, query, department])
+
+  async function toggleActive(employee) {
+    setError('')
     try {
-      await employeeApi.remove(employee.id)
-      setEmployees((current) => current.filter((item) => item.id !== employee.id))
-    } catch {
-      setError('Data karyawan tidak dapat dihapus.')
+      await employeeApi.update(employee.id, { isActive: !employee.isActive })
+      setEmployees((current) => current.map((item) => item.id === employee.id ? { ...item, isActive: !item.isActive } : item))
+      setNotice(`Status ${employee.name} berhasil diubah.`)
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, 'Status karyawan tidak dapat diubah.'))
     }
   }
 
+  function handleSaved() {
+    setShowForm(false)
+    setSelected(null)
+    setNotice('Data karyawan berhasil disimpan.')
+    loadEmployees()
+  }
+
   const columns = [
-    { key: 'name', label: 'Karyawan', render: (row) => <div><strong>{row.name}</strong><small className="table-subtext">{row.nik}</small></div> },
-    { key: 'email', label: 'Kontak', render: (row) => <div><span>{row.email}</span><small className="table-subtext">{row.phone || '-'}</small></div> },
+    { key: 'name', label: 'Nama', render: (row) => <div><strong>{row.name}</strong><small className="table-subtext">{row.nik}</small></div> },
+    { key: 'email', label: 'Email' },
     { key: 'position', label: 'Jabatan' },
     { key: 'department', label: 'Departemen' },
-    { key: 'role', label: 'Role', render: (row) => <StatusBadge>{row.role === 'HRD' ? 'HRD' : 'Karyawan'}</StatusBadge> },
+    { key: 'phone', label: 'Telepon', render: (row) => row.phone || '-' },
+    { key: 'role', label: 'Role' },
     { key: 'isActive', label: 'Status', render: (row) => <StatusBadge status={row.isActive ? 'success' : 'warning'}>{row.isActive ? 'Aktif' : 'Nonaktif'}</StatusBadge> },
-    { key: 'action', label: 'Aksi', render: (row) => <div className="table-actions"><button className="link-button" onClick={() => { setSelected(row); setShowForm(true) }}>Edit</button><button className="link-button danger-link" onClick={() => removeEmployee(row)}>Hapus</button></div> },
+    { key: 'action', label: 'Aksi', render: (row) => <div className="table-actions"><button className="link-button" onClick={() => { setSelected(row); setShowForm(true) }}>Edit</button><button className="link-button" onClick={() => toggleActive(row)}>{row.isActive ? 'Nonaktifkan' : 'Aktifkan'}</button></div> },
   ]
 
   return (
     <>
       <header className="page-header">
-        <div><h1>Data Karyawan</h1><p>Kelola seluruh informasi karyawan dan akses akun.</p></div>
-        <Button onClick={() => { setSelected(null); setShowForm(true) }}>+ Tambah karyawan</Button>
+        <div><h1>Data Karyawan</h1><p>Kelola data master karyawan dan status akses akun.</p></div>
+        <Button onClick={() => { setSelected(null); setShowForm(true) }}>+ Tambah Karyawan</Button>
       </header>
-      {error && <div className="alert">{error}</div>}
-      <Card className="table-card">
-        {loading ? <div className="loading-box"><LoadingSpinner /></div> : <DataTable columns={columns} rows={employees} emptyTitle="Belum ada data karyawan" />}
+      {error && <div className="alert"><div>{error}</div><button className="link-button" onClick={loadEmployees}>Coba lagi</button></div>}
+      {notice && <div className="alert success-alert">{notice}</div>}
+      <Card className="filter-card">
+        <div className="filter-grid employee-filters">
+          <InputField id="employee-search" label="Cari nama, NIK, atau email" value={query} onChange={(event) => setQuery(event.target.value)} />
+          <div className="field">
+            <label htmlFor="department-filter">Departemen</label>
+            <select id="department-filter" value={department} onChange={(event) => setDepartment(event.target.value)}>
+              <option value="">Semua departemen</option>
+              {departments.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
+        </div>
       </Card>
-      {showForm && <Modal title={selected ? 'Edit data karyawan' : 'Tambah karyawan'} onClose={() => setShowForm(false)}><EmployeeForm employee={selected} onClose={() => setShowForm(false)} onSaved={(saved) => { setEmployees((current) => selected ? current.map((item) => item.id === saved.id ? saved : item) : [saved, ...current]); setShowForm(false) }} /></Modal>}
+      <Card className="table-card">
+        {loading ? <div className="loading-box"><LoadingSpinner /></div> : filteredEmployees.length ? <DataTable columns={columns} rows={filteredEmployees} /> : <EmptyState title="Belum ada data">Tidak ada karyawan yang sesuai filter.</EmptyState>}
+      </Card>
+      {showForm && <Modal title={selected ? 'Edit data karyawan' : 'Tambah Karyawan'} onClose={() => setShowForm(false)}><EmployeeForm employee={selected} onClose={() => setShowForm(false)} onSaved={handleSaved} /></Modal>}
     </>
   )
 }

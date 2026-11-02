@@ -3,6 +3,11 @@ import { Button, Card, LoadingSpinner } from '../components/UI'
 import LiveClock from '../components/LiveClock'
 import PhotoUploader from '../components/PhotoUploader'
 import { attendanceApi } from '../services/attendanceApi'
+import { getErrorMessage } from '../lib/api'
+
+function formatTime(value) {
+  return value ? new Date(value).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }) : '-'
+}
 
 export default function AttendancePage() {
   const [today, setToday] = useState(null)
@@ -32,10 +37,7 @@ export default function AttendancePage() {
       setToday(result)
       setSuccess('Presensi berhasil dicatat. Terima kasih!')
     } catch (requestError) {
-      setError(
-        requestError.response?.data?.message ||
-          'Presensi gagal dikirim.',
-      )
+      setError(getErrorMessage(requestError, 'Presensi gagal dikirim.'))
     } finally {
       setSubmitting(false)
     }
@@ -71,7 +73,7 @@ export default function AttendancePage() {
                 <div style={{ fontSize: 36, color: '#16704a' }}>✓</div>
                 <strong>Presensi hari ini sudah tercatat</strong>
                 <span>
-                  Anda melakukan presensi pada pukul {today.time}.
+                  Anda melakukan presensi pada pukul {formatTime(today.checkIn)} WIB.
                 </span>
               </div>
             </Card>

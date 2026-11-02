@@ -6,22 +6,41 @@ function Logo() { return <div className="logo"><div className="logo"><img src={l
 export function Sidebar() {
   const { logout, user } = useAuth()
   const navigate = useNavigate()
-  const links = [['/profile', '⌂', 'Profil'], ['/attendance', '◷', 'Presensi'], ['/history', '▤', 'Riwayat Presensi']]
-  if (user?.role === 'HRD') links.push(['/employees', '♙', 'Data Karyawan'], ['/attendance-monitoring', '◉', 'Monitoring Absensi'])
-  return <aside className="sidebar"><Logo /><div className="nav-label">Menu utama</div><nav className="nav-list">{links.map(([to, icon, label]) => <NavLink key={to} to={to} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}><span className="nav-icon">{icon}</span>{label}</NavLink>)}</nav><div className="sidebar-bottom"><button className="nav-item logout" onClick={() => { logout(); navigate('/') }}><span className="nav-icon">↪</span>Keluar</button></div></aside>
+  const personalLinks = [
+    ['/profile', '⌂', 'Profil'],
+    ['/attendance', '◷', 'Presensi'],
+    ['/history', '▤', 'Riwayat Presensi'],
+  ]
+  const hrdLinks = [
+    ['/employees', '♙', 'Data Karyawan'],
+    ['/attendance-monitoring', '◉', 'Monitoring Presensi'],
+  ]
+  const links = user?.role === 'HRD' ? [...personalLinks, ...hrdLinks] : personalLinks
+  return <aside className="sidebar"><Logo /><div className="nav-label">Menu utama</div><nav className="nav-list">{links.map(([to, icon, label]) => <NavLink key={to} to={to} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}><span className="nav-icon">{icon}</span>{label}</NavLink>)}</nav><div className="sidebar-bottom"><div className="sidebar-user">{user?.name}</div><button className="nav-item logout" onClick={() => { logout(); navigate('/') }}><span className="nav-icon">↪</span>Keluar</button></div></aside>
 }
 
 export function Layout() {
+  const { logout, user } = useAuth()
   const location = useLocation()
-  const pageName = location.pathname === '/profile' ? 'Profil' : location.pathname === '/attendance' ? 'Presensi' : location.pathname === '/employees' ? 'Data Karyawan' : location.pathname === '/attendance-monitoring' ? 'Monitoring Absensi' : 'Riwayat'
-  return <div className="app-shell"><Sidebar /><div className="mobile-topbar"><Logo /><span style={{ color: 'var(--muted)', fontSize: 12 }}>{pageName}</span></div><main className="main-content"><Outlet /></main></div>
+  const navigate = useNavigate()
+  const pageNames = {
+    '/profile': 'Profil',
+    '/attendance': 'Presensi',
+    '/history': 'Riwayat Presensi',
+    '/employees': 'Data Karyawan',
+    '/attendance-monitoring': 'Monitoring Presensi',
+  }
+  const pageName = pageNames[location.pathname] || 'Profil'
+  return <div className="app-shell"><Sidebar /><div className="mobile-topbar"><Logo /><span style={{ color: 'var(--muted)', fontSize: 12 }}>{user?.name} · {pageName}</span><button className="mobile-logout" onClick={() => { logout(); navigate('/') }}>Keluar</button></div><main className="main-content"><Outlet /></main></div>
 }
 export function ProtectedRoute() {
   const { user } = useAuth()
-  const mockMode = import.meta.env.VITE_USE_MOCK !== 'false'
-  return user || mockMode ? <Outlet /> : <Navigate to="/" replace />
+  return user ? <Outlet /> : <Navigate to="/" replace />
 }
 export function HrdRoute() {
   const { user } = useAuth()
   return user?.role === 'HRD' ? <Outlet /> : <Navigate to="/profile" replace />
+}
+export function LegacyRoute() {
+  return <Navigate to="/profile" replace />
 }

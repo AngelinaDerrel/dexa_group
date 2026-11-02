@@ -1,6 +1,32 @@
 import { useEffect, useState } from 'react'
-import {Card, DataTable, LoadingSpinner, Modal, StatusBadge} from '../components/UI'
+import { Card, DataTable, LoadingSpinner, Modal } from '../components/UI'
 import { attendanceApi } from '../services/attendanceApi'
+import { getErrorMessage, getPhotoUrl } from '../lib/api'
+
+function formatDate(value) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+function formatTime(value) {
+  return value ? new Date(value).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }) : '-'
+}
+
+function AttendancePhoto({ photo, date, large = false }) {
+  const [failed, setFailed] = useState(false)
+
+  if (!photo || failed) {
+    return <div className={large ? 'photo-placeholder photo-placeholder-large' : 'photo-placeholder'}>Foto tidak tersedia</div>
+  }
+
+  return (
+    <img
+      className={large ? 'attendance-photo-large' : 'attendance-thumbnail'}
+      src={getPhotoUrl(photo)}
+      alt={`Foto presensi ${date}`}
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 export default function HistoryPage() {
   const [rows, setRows] = useState([])
@@ -12,7 +38,7 @@ export default function HistoryPage() {
     attendanceApi
       .myHistory()
       .then(setRows)
-      .catch(() => setError('Riwayat presensi tidak dapat dimuat.'))
+      .catch((requestError) => setError(getErrorMessage(requestError, 'Riwayat presensi tidak dapat dimuat.')))
       .finally(() => setLoading(false))
   }, [])
 
@@ -21,24 +47,12 @@ export default function HistoryPage() {
       key: 'date',
       label: 'Tanggal',
       render: (row) =>
-        new Date(row.date).toLocaleDateString('id-ID', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        }),
+        formatDate(row.attendanceDate),
     },
     {
-      key: 'time',
+      key: 'checkIn',
       label: 'Jam masuk',
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      render: (row) => (
-        <StatusBadge status={row.status === 'Hadir' ? 'success' : 'warning'}>
-          {row.status}
-        </StatusBadge>
-      ),
+      render: (row) => `${formatTime(row.checkIn)} WIB`,
     },
     {
       key: 'notes',
@@ -82,13 +96,10 @@ export default function HistoryPage() {
       </Card>
       {selected && (
         <Modal
-          title={`Foto presensi · ${selected.date}`}
+          title={`Foto presensi · ${selected.attendanceDate}`}
           onClose={() => setSelected(null)}
         >
-          <img
-            src={selected.photoUrl}
-            alt={`Foto presensi ${selected.date}`}
-          />
+          <AttendancePhoto photo={selected.photo} date={selected.attendanceDate} large />
         </Modal>
       )}
     </>
